@@ -1,9 +1,13 @@
 import { BrowserWindow, screen } from 'electron';
 import { join } from 'path';
+import { loadSettings } from './settings';
 
 let floatingWindow: BrowserWindow | null = null;
 
 export async function createFloatingWindow(isDev: boolean) {
+    // 設定を読み込み
+    const settings = loadSettings();
+
     // ディスプレイサイズ取得
     const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
 
@@ -26,6 +30,9 @@ export async function createFloatingWindow(isDev: boolean) {
         resizable: false,
         skipTaskbar: true,         // タスクバーに表示しない
         show: false,               // 初期状態は非表示
+        opacity: settings.opacity, // 半透明
+        hasShadow: true,           // シャドウを有効に
+        vibrancy: 'under-window',  // macOSのぼかし効果
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -73,5 +80,13 @@ export function toggleFloatingWindow() {
             floatingWindow.show();
             floatingWindow.focus();
         }
+    }
+}
+
+// ウィンドウの透明度を設定
+export function setWindowOpacity(opacity: number) {
+    if (floatingWindow) {
+        const clampedOpacity = Math.max(0.3, Math.min(1.0, opacity));
+        floatingWindow.setOpacity(clampedOpacity);
     }
 }

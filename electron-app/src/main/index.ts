@@ -1,8 +1,8 @@
-import { app } from 'electron';
+import { app, globalShortcut } from 'electron';
 import { closeDatabase, initDatabase } from './database';
 import { createFloatingWindow, getFloatingWindow } from './floatingWindow';
 import { setupIpcHandlers } from './ipcHandlers';
-import { createTray } from './tray';
+import { createTray, unregisterGlobalShortcut } from './tray';
 import { startWebSocketServer, stopWebSocketServer } from './websocketServer';
 
 // 開発モードかどうか
@@ -21,7 +21,7 @@ async function initialize() {
     // フローティングウィンドウ作成
     await createFloatingWindow(isDev);
 
-    // メニューバーのトレイアイコン作成
+    // メニューバーのトレイアイコン作成（グローバルショートカットも登録）
     createTray();
 
     console.log('Task Manager initialized');
@@ -40,6 +40,8 @@ app.on('window-all-closed', (e: Event) => {
 
 // アプリ終了時のクリーンアップ
 app.on('before-quit', () => {
+    unregisterGlobalShortcut();
+    globalShortcut.unregisterAll();
     stopWebSocketServer();
     closeDatabase();
 });
