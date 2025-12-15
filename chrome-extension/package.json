@@ -1,0 +1,14 @@
+{
+    "name": "task-manager-chrome-extension",
+    "version": "1.0.0",
+    "description": "Task Managerアプリと連携するChrome拡張機能",
+    "scripts": {
+        "build": "tsc && npm run copy-assets",
+        "copy-assets": "cp manifest.json dist/ && cp -r icons dist/",
+        "watch": "tsc --watch"
+    },
+    "devDependencies": {
+        "@types/chrome": "^0.0.254",
+        "typescript": "^5.3.0"
+    }
+}
