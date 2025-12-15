@@ -6,6 +6,7 @@ dist/
 out/
 build/
 *.js.map
+*.zip
 
 # OS固有ファイル
 .DS_Store
