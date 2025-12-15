@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AiFillAppstore, AiFillChrome, AiOutlineSync } from 'react-icons/ai';
 import { ActiveChromeTab, ActiveWindow, TaskWindow } from '../../shared/types';
 
 interface WindowPickerProps {
@@ -44,7 +45,7 @@ const WindowPicker: React.FC<WindowPickerProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <h2>ウィンドウを追加</h2>
           <button className="icon-btn" onClick={onRefresh} title="更新">
-            🔄
+            <AiOutlineSync />
           </button>
         </div>
 
@@ -54,13 +55,13 @@ const WindowPicker: React.FC<WindowPickerProps> = ({
             className={`btn ${selectedTab === 'app' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setSelectedTab('app')}
           >
-            🖥 アプリ ({activeWindows.length})
+            <AiFillAppstore /> アプリ ({activeWindows.length})
           </button>
           <button
             className={`btn ${selectedTab === 'chrome' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setSelectedTab('chrome')}
           >
-            🌐 Chromeタブ ({chromeTabs.length})
+            <AiFillChrome /> Chromeタブ ({chromeTabs.length})
           </button>
         </div>
 
@@ -78,7 +79,7 @@ const WindowPicker: React.FC<WindowPickerProps> = ({
                   className="window-option"
                   onClick={() => handleSelectAppWindow(window)}
                 >
-                  <div className="window-option-app">🖥 {window.appName}</div>
+                  <div className="window-option-app"><AiFillAppstore /> {window.appName}</div>
                   {window.windowTitle && (
                     <div className="window-option-title">{window.windowTitle}</div>
                   )}
@@ -98,7 +99,7 @@ const WindowPicker: React.FC<WindowPickerProps> = ({
                   className="window-option"
                   onClick={() => handleSelectChromeTab(tab)}
                 >
-                  <div className="window-option-app">🌐 {tab.title}</div>
+                  <div className="window-option-app"><AiFillChrome /> {tab.title}</div>
                   <div className="window-option-title">{tab.url}</div>
                 </div>
               ))

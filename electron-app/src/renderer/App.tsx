@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { AiOutlineClose, AiOutlineSync } from "react-icons/ai";
 import { ActiveChromeTab, ActiveWindow, Task, TaskWindow } from '../shared/types';
 import TaskEditor from './components/TaskEditor';
 import TaskList from './components/TaskList';
@@ -177,21 +178,21 @@ function App() {
     <div className="app-container">
       {/* ヘッダー */}
       <header className="header">
-        <h1>📋 Task Manager</h1>
+        <h1>Task Manager</h1>
         <div className="header-actions">
           <button 
             className="icon-btn" 
             onClick={refreshWindows}
             title="ウィンドウ情報を更新"
           >
-            🔄
+            <AiOutlineSync />
           </button>
           <button 
             className="icon-btn" 
             onClick={handleHideWindow}
             title="ウィンドウを非表示"
           >
-            ✕
+            <AiOutlineClose />
           </button>
         </div>
       </header>

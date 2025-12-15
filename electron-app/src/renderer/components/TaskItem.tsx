@@ -1,4 +1,7 @@
 import React from 'react';
+import { AiFillAppstore, AiFillChrome, AiFillDelete, AiOutlineForm, AiOutlineSwap } from 'react-icons/ai';
+import { FaRegWindowRestore } from 'react-icons/fa';
+import { TiFlowChildren } from 'react-icons/ti';
 import { Task, TaskWindow } from '../../shared/types';
 
 interface TaskItemProps {
@@ -47,9 +50,6 @@ const TaskItem: React.FC<TaskItemProps> = ({
           )}
           <span className="task-name">{task.name}</span>
         </div>
-        <span className="task-windows-count">
-          {windows.length} ウィンドウ
-        </span>
       </div>
 
       {/* 紐づいたウィンドウ一覧 */}
@@ -67,8 +67,8 @@ const TaskItem: React.FC<TaskItemProps> = ({
             >
               <span>
                 {win.type === 'app' 
-                  ? `🖥 ${win.appName}${win.windowTitle ? ` - ${win.windowTitle}` : ''}`
-                  : `🌐 ${win.tabTitle || win.tabUrl || 'Chrome タブ'}`
+                  ? <><AiFillAppstore /> {win.appName}{win.windowTitle ? ` - ${win.windowTitle}` : ''}</>
+                  : <><AiFillChrome /> {win.tabTitle || win.tabUrl || 'Chrome タブ'}</>
                 }
               </span>
               <button
@@ -86,19 +86,19 @@ const TaskItem: React.FC<TaskItemProps> = ({
       {/* アクションボタン */}
       <div className="task-item-actions">
         <button className="task-action-btn switch" onClick={onSwitch}>
-          切替
+          <AiOutlineSwap />
         </button>
         <button className="task-action-btn" onClick={onPickWindows}>
-          +ウィンドウ
+          <FaRegWindowRestore />
         </button>
         <button className="task-action-btn" onClick={onAddChild}>
-          +子タスク
+          <TiFlowChildren />
         </button>
         <button className="task-action-btn" onClick={onEdit}>
-          編集
+          <AiOutlineForm />
         </button>
         <button className="task-action-btn" onClick={onDelete}>
-          削除
+          <AiFillDelete />
         </button>
       </div>
     </div>

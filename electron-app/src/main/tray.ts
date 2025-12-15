@@ -101,7 +101,7 @@ function updateTrayMenu() {
         },
         { type: 'separator' },
         {
-            label: '⚙️ 設定',
+            label: '設定',
             submenu: [
                 {
                     label: 'ショートカットキー',
