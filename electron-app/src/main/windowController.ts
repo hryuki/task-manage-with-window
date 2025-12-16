@@ -1,20 +1,65 @@
 import { exec } from 'child_process';
+import { app } from 'electron';
+import { join } from 'path';
 import { promisify } from 'util';
 import { ActiveWindow, TaskWindow } from '../shared/types';
 
 const execAsync = promisify(exec);
 
+// Swiftヘルパースクリプトのパスを取得
+function getSwiftHelperPath(): string {
+  // 開発環境とパッケージ環境の両方に対応
+  const isDev = !app.isPackaged;
+  if (isDev) {
+    return join(__dirname, '../../resources/get_electron_windows.swift');
+  }
+  return join(process.resourcesPath, 'get_electron_windows.swift');
+}
+
 // 現在開いているウィンドウ一覧を取得
+// AXManualAccessibilityを有効にしてElectronベースのアプリ（VS Code, Antigravityなど）のウィンドウも取得
 export async function getActiveWindows(): Promise<ActiveWindow[]> {
-  // より堅牢なAppleScript - 全てのアプリケーションのウィンドウを取得
-  // displayed name を使用してElectronベースのアプリ（VS Code, Antigravityなど）の正しい名前を取得
+  try {
+    // Swiftヘルパースクリプトを実行してAXManualAccessibilityを有効にしたウィンドウを取得
+    const swiftHelperPath = getSwiftHelperPath();
+    const { stdout } = await execAsync(`swift "${swiftHelperPath}"`, {
+      timeout: 10000, // 10秒タイムアウト
+    });
+
+    const windows: ActiveWindow[] = [];
+    const lines = stdout.trim().split('\n');
+
+    let windowId = 0;
+    for (const line of lines) {
+      const parts = line.split('|||');
+      if (parts.length >= 2) {
+        const appName = parts[0].trim();
+        const windowTitle = parts[1].trim();
+        if (appName && windowTitle) {
+          windows.push({
+            appName,
+            windowTitle,
+            windowId: windowId++,
+          });
+        }
+      }
+    }
+
+    return windows;
+  } catch (error) {
+    console.error('Failed to get active windows with Swift helper:', error);
+    // フォールバック: 従来のAppleScriptを使用
+    return getActiveWindowsFallback();
+  }
+}
+
+// フォールバック用の従来のAppleScript実装
+async function getActiveWindowsFallback(): Promise<ActiveWindow[]> {
   const script = `
     set windowList to {}
     tell application "System Events"
       set allProcesses to every process whose visible is true
       repeat with proc in allProcesses
-        -- displayed name を使用してアプリバンドルの表示名を取得
-        -- これにより「Electron」ではなく「Visual Studio Code」「Antigravity」などが取得される
         set appName to displayed name of proc
         try
           set procWindows to every window of proc
@@ -27,7 +72,6 @@ export async function getActiveWindows(): Promise<ActiveWindow[]> {
             end try
           end repeat
         on error
-          -- ウィンドウ取得に失敗した場合はスキップ
         end try
       end repeat
     end tell
@@ -58,7 +102,7 @@ export async function getActiveWindows(): Promise<ActiveWindow[]> {
 
     return windows;
   } catch (error) {
-    console.error('Failed to get active windows:', error);
+    console.error('Failed to get active windows with fallback:', error);
     return [];
   }
 }
