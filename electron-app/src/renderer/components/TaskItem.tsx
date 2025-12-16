@@ -37,14 +37,15 @@ const TaskItem: React.FC<TaskItemProps> = ({
 }) => {
   return (
     <div 
-      className="task-item"
-      style={{ marginLeft: depth * 16 }}
+      className="task-item task-item-compact"
+      style={{ marginLeft: depth * 12 }}
     >
+      {/* メイン行: タスク名のみ */}
       <div className="task-item-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="task-item-left">
           {hasChildren && (
             <span 
-              style={{ cursor: 'pointer', fontSize: 12 }}
+              className="expand-toggle"
               onClick={onToggleExpand}
             >
               {isExpanded ? '▼' : '▶'}
@@ -67,56 +68,63 @@ const TaskItem: React.FC<TaskItemProps> = ({
             {task.name}
           </span>
         </div>
+        {/* ウィンドウ切り替えボタン（ウィンドウがある場合のみ表示） */}
+        {windows.length > 0 && (
+          <button 
+            className="task-action-btn" 
+            onClick={onSwitch}
+            title="ウィンドウに切り替え"
+          >
+            <AiOutlineSwap />
+          </button>
+        )}
       </div>
 
-      {/* 紐づいたウィンドウ一覧 */}
-      {windows.length > 0 && (
-        <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-secondary)' }}>
-          {windows.map(win => (
-            <div 
-              key={win.id}
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'space-between',
-                padding: '4px 0'
-              }}
-            >
-              <span>
-                {win.type === 'app' 
-                  ? <><AiFillAppstore /> {win.appName}{win.windowTitle ? ` - ${win.windowTitle}` : ''}</>
-                  : <><AiFillChrome /> {win.tabTitle || win.tabUrl || 'Chrome タブ'}</>
-                }
-              </span>
-              <button
-                className="task-action-btn"
-                onClick={() => onRemoveWindow(win.id)}
-                style={{ padding: '2px 6px', fontSize: 10 }}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
+      {/* ホバー時に展開するエリア（アクションボタン + ウィンドウ一覧） */}
+      <div className="task-expandable-area">
+        {/* アクションボタン */}
+        <div className="task-item-actions">
+          {/* <button className="task-action-btn switch" onClick={onSwitch} title="切り替え">
+            <AiOutlineSwap />
+          </button> */}
+          <button className="task-action-btn" onClick={onPickWindows} title="ウィンドウ追加">
+            <FaRegWindowRestore />
+          </button>
+          <button className="task-action-btn" onClick={onAddChild} title="子タスク追加">
+            <TiFlowChildren />
+          </button>
+          <button className="task-action-btn" onClick={onEdit} title="編集">
+            <AiOutlineForm />
+          </button>
+          <button className="task-action-btn" onClick={onDelete} title="削除">
+            <AiFillDelete />
+          </button>
         </div>
-      )}
 
-      {/* アクションボタン */}
-      <div className="task-item-actions">
-        <button className="task-action-btn switch" onClick={onSwitch}>
-          <AiOutlineSwap />
-        </button>
-        <button className="task-action-btn" onClick={onPickWindows}>
-          <FaRegWindowRestore />
-        </button>
-        <button className="task-action-btn" onClick={onAddChild}>
-          <TiFlowChildren />
-        </button>
-        <button className="task-action-btn" onClick={onEdit}>
-          <AiOutlineForm />
-        </button>
-        <button className="task-action-btn" onClick={onDelete}>
-          <AiFillDelete />
-        </button>
+        {/* 紐づいたウィンドウ一覧 */}
+        {windows.length > 0 && (
+          <div className="task-windows-list">
+            {windows.map(win => (
+              <div 
+                key={win.id}
+                className="task-window-item"
+              >
+                <span className="task-window-info">
+                  {win.type === 'app' 
+                    ? <><AiFillAppstore /> {win.appName}{win.windowTitle ? ` - ${win.windowTitle}` : ''}</>
+                    : <><AiFillChrome /> {win.tabTitle || win.tabUrl || 'Chrome タブ'}</>
+                  }
+                </span>
+                <button
+                  className="task-action-btn task-window-remove"
+                  onClick={() => onRemoveWindow(win.id)}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

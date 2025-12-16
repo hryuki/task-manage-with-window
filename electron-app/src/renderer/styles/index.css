@@ -114,6 +114,12 @@ body {
   border: 1px solid transparent;
 }
 
+/* コンパクトモード */
+.task-item.task-item-compact {
+  padding: 8px 10px;
+  margin-bottom: 4px;
+}
+
 .task-item:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: var(--accent);
@@ -128,19 +134,44 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
+}
+
+.task-item-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.expand-toggle {
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* ウィンドウ切り替えボタン（常時表示） */
+.task-switch-indicator {
+  flex-shrink: 0;
+  font-size: 11px;
+  padding: 2px 5px;
 }
 
 .task-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
+  /* タスク名は省略しない - 折り返し表示 */
+  word-break: break-word;
 }
 
 /* カスタムチェックボックス */
 .task-checkbox {
   appearance: none;
   -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border: 2px solid var(--text-secondary);
   border-radius: 3px;
   background: transparent;
@@ -166,39 +197,44 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   color: white;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: bold;
 }
 
-.task-windows-count {
-  font-size: 11px;
-  color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.1);
-  padding: 2px 8px;
-  border-radius: 10px;
+/* ホバー時に展開するエリア（アクションボタン + ウィンドウ一覧） */
+.task-expandable-area {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease, opacity 0.2s ease, margin 0.2s ease;
+  opacity: 0;
+  margin-top: 0;
 }
 
-.task-item-actions {
+.task-item-compact:hover .task-expandable-area {
+  max-height: 200px;
+  opacity: 1;
+  margin-top: 6px;
+}
+
+/* アクションボタン（ホバー時に下部表示） */
+.task-item-compact .task-item-actions {
   display: flex;
   gap: 4px;
-  margin-top: 8px;
-  opacity: 0;
-  transition: var(--transition);
-}
-
-.task-item:hover .task-item-actions {
-  opacity: 1;
+  margin-bottom: 4px;
 }
 
 .task-action-btn {
   font-size: 11px;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 3px 6px;
+  border-radius: 3px;
   border: none;
   background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
   cursor: pointer;
   transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .task-action-btn:hover {
@@ -211,6 +247,42 @@ body {
 
 .task-action-btn.switch:hover {
   background: var(--accent-hover);
+}
+
+/* ウィンドウ一覧 */
+.task-windows-list {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.task-window-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3px 0;
+  gap: 8px;
+}
+
+.task-window-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-window-remove {
+  padding: 1px 4px;
+  font-size: 9px;
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.task-window-item:hover .task-window-remove {
+  opacity: 1;
 }
 
 /* === 子タスク === */
