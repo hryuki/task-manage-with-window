@@ -130,7 +130,7 @@ function updateTrayMenu() {
 
 export function createTray() {
     // メニューバーアイコン作成（Templateを使用してダークモード対応）
-    const iconPath = join(__dirname, '../../resources/iconTemplate.png');
+    const iconPath = join(__dirname, '../../resources/icon.png');
 
     // アイコンが存在しない場合は空のアイコンを作成
     let icon: NativeImage;

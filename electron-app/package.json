@@ -42,7 +42,7 @@
     "productName": "Task Manager",
     "mac": {
       "category": "public.app-category.productivity",
-      "icon": "resources/icon.icns"
+      "icon": "resources/icon.png"
     },
     "files": [
       "dist/**/*",
