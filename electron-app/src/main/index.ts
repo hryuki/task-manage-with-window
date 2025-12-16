@@ -3,6 +3,7 @@ import { closeDatabase, initDatabase } from './database';
 import { createFloatingWindow, getFloatingWindow } from './floatingWindow';
 import { setupIpcHandlers } from './ipcHandlers';
 import { createTray, unregisterGlobalShortcut } from './tray';
+import { checkForUpdates } from './updater';
 import { startWebSocketServer, stopWebSocketServer } from './websocketServer';
 
 // 開発モードかどうか
@@ -25,6 +26,11 @@ async function initialize() {
     createTray();
 
     console.log('Task Manager initialized');
+
+    // 自動アップデートチェック（本番ビルドのみ）
+    if (!isDev) {
+        checkForUpdates();
+    }
 }
 
 // Dockアイコンを非表示（メニューバーアプリとして動作）

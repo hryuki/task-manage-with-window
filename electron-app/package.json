@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "better-sqlite3": "^9.2.2",
+    "electron-updater": "^6.6.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
@@ -40,6 +41,11 @@
   "build": {
     "appId": "com.taskmanage.app",
     "productName": "Task Manager",
+    "publish": {
+      "provider": "github",
+      "owner": "hryuki",
+      "repo": "task-manage-with-window"
+    },
     "mac": {
       "category": "public.app-category.productivity",
       "icon": "resources/icon.png"
