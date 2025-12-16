@@ -130,6 +130,17 @@ body {
   border-color: var(--accent);
 }
 
+/* ピン留め状態 */
+.task-item.task-item-pinned {
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 8px rgba(233, 69, 96, 0.4);
+}
+
+.task-action-btn.pinned {
+  background: var(--accent);
+  color: white;
+}
+
 .task-item-header {
   display: flex;
   align-items: center;

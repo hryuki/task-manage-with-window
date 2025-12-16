@@ -19,6 +19,7 @@ function App() {
   const [pickingWindowsForTask, setPickingWindowsForTask] = useState<string | null>(null);
   const [newTaskName, setNewTaskName] = useState('');
   const [chromeConnected, setChromeConnected] = useState(false);
+  const [pinnedTaskId, setPinnedTaskId] = useState<string | null>(null);
 
   // タスクをツリー構造に変換
   const buildTaskTree = useCallback((flatTasks: Task[], taskWindows: TaskWindow[]): TaskWithChildren[] => {
@@ -197,6 +198,12 @@ function App() {
     }
   };
 
+  // タスクのピン留めをトグル
+  const handleTogglePin = (taskId: string) => {
+    // 同じタスクを再度押した場合はピン解除、別のタスクの場合は切り替え
+    setPinnedTaskId(prev => prev === taskId ? null : taskId);
+  };
+
   return (
     <div className="app-container">
       {/* ヘッダー */}
@@ -232,6 +239,7 @@ function App() {
       ) : (
         <TaskList
           tasks={tasks}
+          pinnedTaskId={pinnedTaskId}
           onSwitchToTask={handleSwitchToTask}
           onEditTask={setEditingTask}
           onDeleteTask={handleDeleteTask}
@@ -239,6 +247,7 @@ function App() {
           onPickWindows={setPickingWindowsForTask}
           onRemoveWindow={handleRemoveWindow}
           onToggleComplete={handleToggleComplete}
+          onTogglePin={handleTogglePin}
         />
       )}
 

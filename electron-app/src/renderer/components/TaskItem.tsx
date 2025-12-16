@@ -1,5 +1,5 @@
 import React from 'react';
-import { AiFillAppstore, AiFillChrome, AiFillDelete, AiOutlineForm, AiOutlineSwap } from 'react-icons/ai';
+import { AiFillAppstore, AiFillChrome, AiFillDelete, AiOutlineForm, AiOutlinePushpin, AiOutlineSwap } from 'react-icons/ai';
 import { FaRegWindowRestore } from 'react-icons/fa';
 import { TiFlowChildren } from 'react-icons/ti';
 import { Task, TaskWindow } from '../../shared/types';
@@ -10,6 +10,7 @@ interface TaskItemProps {
   depth: number;
   hasChildren: boolean;
   isExpanded: boolean;
+  isPinned: boolean;
   onToggleExpand: () => void;
   onSwitch: () => void;
   onEdit: () => void;
@@ -18,6 +19,7 @@ interface TaskItemProps {
   onPickWindows: () => void;
   onRemoveWindow: (windowId: string) => void;
   onToggleComplete: () => void;
+  onTogglePin: () => void;
 }
 
 const TaskItem: React.FC<TaskItemProps> = ({
@@ -26,6 +28,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
   depth,
   hasChildren,
   isExpanded,
+  isPinned,
   onToggleExpand,
   onSwitch,
   onEdit,
@@ -34,10 +37,11 @@ const TaskItem: React.FC<TaskItemProps> = ({
   onPickWindows,
   onRemoveWindow,
   onToggleComplete,
+  onTogglePin,
 }) => {
   return (
     <div 
-      className="task-item task-item-compact"
+      className={`task-item task-item-compact ${isPinned ? 'task-item-pinned' : ''}`}
       style={{ marginLeft: depth * 12 }}
     >
       {/* メイン行: タスク名のみ */}
@@ -87,6 +91,13 @@ const TaskItem: React.FC<TaskItemProps> = ({
           {/* <button className="task-action-btn switch" onClick={onSwitch} title="切り替え">
             <AiOutlineSwap />
           </button> */}
+          <button 
+            className={`task-action-btn ${isPinned ? 'pinned' : ''}`} 
+            onClick={onTogglePin} 
+            title={isPinned ? 'ピン留め解除' : 'ピン留め'}
+          >
+            <AiOutlinePushpin />
+          </button>
           <button className="task-action-btn" onClick={onPickWindows} title="ウィンドウ追加">
             <FaRegWindowRestore />
           </button>

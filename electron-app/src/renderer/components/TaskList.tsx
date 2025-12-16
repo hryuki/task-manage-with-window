@@ -9,6 +9,7 @@ interface TaskWithChildren extends Task {
 
 interface TaskListProps {
   tasks: TaskWithChildren[];
+  pinnedTaskId: string | null;
   onSwitchToTask: (taskId: string) => void;
   onEditTask: (task: Task) => void;
   onDeleteTask: (taskId: string) => void;
@@ -16,10 +17,12 @@ interface TaskListProps {
   onPickWindows: (taskId: string) => void;
   onRemoveWindow: (windowId: string) => void;
   onToggleComplete: (taskId: string) => void;
+  onTogglePin: (taskId: string) => void;
 }
 
 const TaskList: React.FC<TaskListProps> = ({
   tasks,
+  pinnedTaskId,
   onSwitchToTask,
   onEditTask,
   onDeleteTask,
@@ -27,6 +30,7 @@ const TaskList: React.FC<TaskListProps> = ({
   onPickWindows,
   onRemoveWindow,
   onToggleComplete,
+  onTogglePin,
 }) => {
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
   const [addingChildTo, setAddingChildTo] = useState<string | null>(null);
@@ -63,6 +67,7 @@ const TaskList: React.FC<TaskListProps> = ({
           depth={depth}
           hasChildren={hasChildren}
           isExpanded={isExpanded}
+          isPinned={pinnedTaskId === task.id}
           onToggleExpand={() => toggleExpanded(task.id)}
           onSwitch={() => onSwitchToTask(task.id)}
           onEdit={() => onEditTask(task)}
@@ -71,6 +76,7 @@ const TaskList: React.FC<TaskListProps> = ({
           onPickWindows={() => onPickWindows(task.id)}
           onRemoveWindow={onRemoveWindow}
           onToggleComplete={() => onToggleComplete(task.id)}
+          onTogglePin={() => onTogglePin(task.id)}
         />
 
         {/* 子タスク追加フォーム */}
