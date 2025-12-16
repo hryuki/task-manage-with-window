@@ -174,6 +174,29 @@ function App() {
     await window.electronAPI.hideWindow();
   };
 
+  // タスク完了状態をトグル
+  const handleToggleComplete = async (taskId: string) => {
+    // タスクツリーから対象タスクを探す
+    const findTask = (tasks: TaskWithChildren[]): TaskWithChildren | null => {
+      for (const task of tasks) {
+        if (task.id === taskId) return task;
+        const found = findTask(task.children);
+        if (found) return found;
+      }
+      return null;
+    };
+    
+    const task = findTask(tasks);
+    if (!task) return;
+    
+    try {
+      await window.electronAPI.updateTask(taskId, { completed: !task.completed });
+      await loadTasks();
+    } catch (error) {
+      console.error('Failed to toggle task completion:', error);
+    }
+  };
+
   return (
     <div className="app-container">
       {/* ヘッダー */}
@@ -215,6 +238,7 @@ function App() {
           onAddChildTask={handleAddChildTask}
           onPickWindows={setPickingWindowsForTask}
           onRemoveWindow={handleRemoveWindow}
+          onToggleComplete={handleToggleComplete}
         />
       )}
 

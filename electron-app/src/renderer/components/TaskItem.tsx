@@ -17,6 +17,7 @@ interface TaskItemProps {
   onAddChild: () => void;
   onPickWindows: () => void;
   onRemoveWindow: (windowId: string) => void;
+  onToggleComplete: () => void;
 }
 
 const TaskItem: React.FC<TaskItemProps> = ({
@@ -32,6 +33,7 @@ const TaskItem: React.FC<TaskItemProps> = ({
   onAddChild,
   onPickWindows,
   onRemoveWindow,
+  onToggleComplete,
 }) => {
   return (
     <div 
@@ -48,7 +50,22 @@ const TaskItem: React.FC<TaskItemProps> = ({
               {isExpanded ? '▼' : '▶'}
             </span>
           )}
-          <span className="task-name">{task.name}</span>
+          <input
+            type="checkbox"
+            className="task-checkbox"
+            checked={task.completed}
+            onChange={onToggleComplete}
+          />
+          <span 
+            className="task-name"
+            style={{
+              textDecoration: task.completed ? 'line-through' : 'none',
+              opacity: task.completed ? 0.5 : 1,
+              color: task.completed ? 'var(--text-secondary)' : 'inherit',
+            }}
+          >
+            {task.name}
+          </span>
         </div>
       </div>
 

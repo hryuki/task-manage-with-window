@@ -7,12 +7,15 @@ const execAsync = promisify(exec);
 // 現在開いているウィンドウ一覧を取得
 export async function getActiveWindows(): Promise<ActiveWindow[]> {
   // より堅牢なAppleScript - 全てのアプリケーションのウィンドウを取得
+  // displayed name を使用してElectronベースのアプリ（VS Code, Antigravityなど）の正しい名前を取得
   const script = `
     set windowList to {}
     tell application "System Events"
       set allProcesses to every process whose visible is true
       repeat with proc in allProcesses
-        set appName to name of proc
+        -- displayed name を使用してアプリバンドルの表示名を取得
+        -- これにより「Electron」ではなく「Visual Studio Code」「Antigravity」などが取得される
+        set appName to displayed name of proc
         try
           set procWindows to every window of proc
           repeat with win in procWindows

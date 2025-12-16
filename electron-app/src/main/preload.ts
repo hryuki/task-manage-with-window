@@ -29,6 +29,7 @@ interface Task {
     name: string;
     parentId: string | null;
     order: number;
+    completed: boolean;
     createdAt: string;
     updatedAt: string;
 }

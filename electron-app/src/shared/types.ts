@@ -6,6 +6,7 @@ export interface Task {
     name: string;
     parentId: string | null;  // 親タスクID（nullはルートタスク）
     order: number;            // 同階層内での順序
+    completed: boolean;       // タスク完了フラグ
     createdAt: string;
     updatedAt: string;
 }

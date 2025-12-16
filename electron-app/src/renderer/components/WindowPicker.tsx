@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AiFillAppstore, AiFillChrome, AiOutlineSync } from 'react-icons/ai';
+import { AiFillAppstore, AiFillChrome, AiOutlineClose } from 'react-icons/ai';
 import { ActiveChromeTab, ActiveWindow, TaskWindow } from '../../shared/types';
 
 interface WindowPickerProps {
@@ -42,10 +42,10 @@ const WindowPicker: React.FC<WindowPickerProps> = ({
   return (
     <div className="window-editor" onClick={onClose}>
       <div className="window-editor-content" onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
           <h2>ウィンドウを追加</h2>
-          <button className="icon-btn" onClick={onRefresh} title="更新">
-            <AiOutlineSync />
+          <button className="icon-btn" onClick={onClose} title="閉じる">
+            <AiOutlineClose />
           </button>
         </div>
 
@@ -107,11 +107,11 @@ const WindowPicker: React.FC<WindowPickerProps> = ({
           )}
         </div>
 
-        <div className="editor-actions">
+        {/* <div className="editor-actions">
           <button className="btn btn-secondary" onClick={onClose}>
             閉じる
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

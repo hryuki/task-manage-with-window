@@ -15,6 +15,7 @@ interface TaskListProps {
   onAddChildTask: (parentId: string, name: string) => void;
   onPickWindows: (taskId: string) => void;
   onRemoveWindow: (windowId: string) => void;
+  onToggleComplete: (taskId: string) => void;
 }
 
 const TaskList: React.FC<TaskListProps> = ({
@@ -25,6 +26,7 @@ const TaskList: React.FC<TaskListProps> = ({
   onAddChildTask,
   onPickWindows,
   onRemoveWindow,
+  onToggleComplete,
 }) => {
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
   const [addingChildTo, setAddingChildTo] = useState<string | null>(null);
@@ -68,6 +70,7 @@ const TaskList: React.FC<TaskListProps> = ({
           onAddChild={() => setAddingChildTo(task.id)}
           onPickWindows={() => onPickWindows(task.id)}
           onRemoveWindow={onRemoveWindow}
+          onToggleComplete={() => onToggleComplete(task.id)}
         />
 
         {/* 子タスク追加フォーム */}
