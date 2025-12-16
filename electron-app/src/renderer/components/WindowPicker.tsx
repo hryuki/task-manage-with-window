@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { AiFillAppstore, AiFillChrome, AiOutlineClose } from 'react-icons/ai';
+import React, { useMemo, useState } from 'react';
+import { AiFillAppstore, AiFillChrome, AiOutlineClose, AiOutlineSearch } from 'react-icons/ai';
 import { ActiveChromeTab, ActiveWindow, TaskWindow } from '../../shared/types';
 
 interface WindowPickerProps {
@@ -22,6 +22,27 @@ const WindowPicker: React.FC<WindowPickerProps> = ({
   onRefresh,
 }) => {
   const [selectedTab, setSelectedTab] = useState<TabType>('app');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // 検索クエリでフィルタリングしたウィンドウリスト
+  const filteredWindows = useMemo(() => {
+    if (!searchQuery.trim()) return activeWindows;
+    const query = searchQuery.toLowerCase();
+    return activeWindows.filter(win => 
+      win.appName.toLowerCase().includes(query) ||
+      (win.windowTitle && win.windowTitle.toLowerCase().includes(query))
+    );
+  }, [activeWindows, searchQuery]);
+
+  // 検索クエリでフィルタリングしたChromeタブリスト
+  const filteredTabs = useMemo(() => {
+    if (!searchQuery.trim()) return chromeTabs;
+    const query = searchQuery.toLowerCase();
+    return chromeTabs.filter(tab =>
+      tab.title.toLowerCase().includes(query) ||
+      tab.url.toLowerCase().includes(query)
+    );
+  }, [chromeTabs, searchQuery]);
 
   const handleSelectAppWindow = (window: ActiveWindow) => {
     onAddWindow(taskId, {
@@ -49,31 +70,78 @@ const WindowPicker: React.FC<WindowPickerProps> = ({
           </button>
         </div>
 
+        {/* 検索ボックス */}
+        <div className="search-box" style={{ marginBottom: 12 }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            background: 'rgba(255, 255, 255, 0.1)', 
+            borderRadius: 6,
+            padding: '8px 12px',
+            gap: 8
+          }}>
+            <AiOutlineSearch style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
+            <input
+              type="text"
+              placeholder="ウィンドウ名を検索..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                flex: 1,
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                color: 'var(--text-primary)',
+                fontSize: 13
+              }}
+              autoFocus
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <AiOutlineClose size={14} />
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* タブ切り替え */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           <button
             className={`btn ${selectedTab === 'app' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setSelectedTab('app')}
           >
-            <AiFillAppstore /> アプリ ({activeWindows.length})
+            <AiFillAppstore /> アプリ ({filteredWindows.length}/{activeWindows.length})
           </button>
           <button
             className={`btn ${selectedTab === 'chrome' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setSelectedTab('chrome')}
           >
-            <AiFillChrome /> Chromeタブ ({chromeTabs.length})
+            <AiFillChrome /> Chromeタブ ({filteredTabs.length}/{chromeTabs.length})
           </button>
         </div>
 
         {/* ウィンドウ一覧 */}
         <div className="window-list">
           {selectedTab === 'app' ? (
-            activeWindows.length === 0 ? (
+            filteredWindows.length === 0 ? (
               <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 20 }}>
-                アプリウィンドウが見つかりません
+                {activeWindows.length === 0 
+                  ? 'アプリウィンドウが見つかりません'
+                  : '検索に一致するウィンドウがありません'}
               </div>
             ) : (
-              activeWindows.map((window, index) => (
+              filteredWindows.map((window, index) => (
                 <div
                   key={index}
                   className="window-option"
@@ -87,13 +155,19 @@ const WindowPicker: React.FC<WindowPickerProps> = ({
               ))
             )
           ) : (
-            chromeTabs.length === 0 ? (
+            filteredTabs.length === 0 ? (
               <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 20 }}>
-                Chromeタブが見つかりません<br />
-                <span style={{ fontSize: 11 }}>Chrome拡張機能が接続されていることを確認してください</span>
+                {chromeTabs.length === 0 ? (
+                  <>
+                    Chromeタブが見つかりません<br />
+                    <span style={{ fontSize: 11 }}>Chrome拡張機能が接続されていることを確認してください</span>
+                  </>
+                ) : (
+                  '検索に一致するタブがありません'
+                )}
               </div>
             ) : (
-              chromeTabs.map((tab) => (
+              filteredTabs.map((tab) => (
                 <div
                   key={tab.tabId}
                   className="window-option"
