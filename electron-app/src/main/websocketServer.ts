@@ -108,7 +108,8 @@ export function getChromeTabs(): Promise<ActiveChromeTab[]> {
         if (!sent) {
             clearTimeout(timeout);
             pendingTabsRequest = null;
-            resolve([]); // 接続されていない場合は空配列
+            // 接続されていない場合もキャッシュを返す
+            resolve(chromeTabs);
         }
     });
 }
