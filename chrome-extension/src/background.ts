@@ -137,6 +137,39 @@ chrome.alarms.onAlarm.addListener((alarm) => {
         if (socket?.readyState !== WebSocket.OPEN) {
             connect();
         }
+        // 接続中の場合は定期的にタブリストを送信（キャッシュを更新）
+        if (socket?.readyState === WebSocket.OPEN) {
+            sendTabsList();
+        }
+    }
+});
+
+// タブの変更を監視して自動的にタブリストを更新
+// これによりElectron側に常に最新のタブ情報がキャッシュされる
+chrome.tabs.onCreated.addListener(() => {
+    if (socket?.readyState === WebSocket.OPEN) {
+        sendTabsList();
+    }
+});
+
+chrome.tabs.onRemoved.addListener(() => {
+    if (socket?.readyState === WebSocket.OPEN) {
+        sendTabsList();
+    }
+});
+
+chrome.tabs.onUpdated.addListener((_tabId, changeInfo) => {
+    // URLまたはタイトルが変更された場合のみ送信
+    if (changeInfo.url || changeInfo.title) {
+        if (socket?.readyState === WebSocket.OPEN) {
+            sendTabsList();
+        }
+    }
+});
+
+chrome.tabs.onActivated.addListener(() => {
+    if (socket?.readyState === WebSocket.OPEN) {
+        sendTabsList();
     }
 });
 

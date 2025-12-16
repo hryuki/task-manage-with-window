@@ -29,7 +29,8 @@ export function startWebSocketServer() {
             ws.on('close', () => {
                 console.log('Chrome extension disconnected');
                 chromeExtensionSocket = null;
-                chromeTabs = [];
+                // 接続が切れてもキャッシュは保持する（一時的な切断でもタブ切り替えを可能にするため）
+                // chromeTabs = [];
             });
 
             ws.on('error', (error) => {
