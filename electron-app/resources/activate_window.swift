@@ -3,6 +3,7 @@
 // 指定されたアプリの指定されたウィンドウをアクティブにするヘルパー
 // 使用法: swift activate_window.swift "アプリ名" "ウィンドウタイトル"
 // AXManualAccessibilityを有効にしてElectronアプリのウィンドウも操作可能
+// 別のSpaceにあるウィンドウも正しくアクティベート
 
 import Cocoa
 import ApplicationServices
@@ -31,8 +32,8 @@ let axApp = AXUIElementCreateApplication(pid)
 // AXManualAccessibilityを有効化
 AXUIElementSetAttributeValue(axApp, "AXManualAccessibility" as CFString, kCFBooleanTrue)
 
-// アプリをアクティブにする
-app.activate(options: [.activateIgnoringOtherApps])
+// アプリをアクティブにする（別Spaceにある場合はそのSpaceに移動する）
+app.activate()
 
 // ウィンドウを取得
 var windowsValue: CFTypeRef?
@@ -52,11 +53,60 @@ if result == .success, let windows = windowsValue as? [AXUIElement] {
                 // メインウィンドウとして設定
                 AXUIElementSetAttributeValue(axApp, kAXMainWindowAttribute as CFString, window)
                 
+                // フォーカスされたウィンドウとして設定
+                AXUIElementSetAttributeValue(axApp, kAXFocusedWindowAttribute as CFString, window)
+                
+                // 少し待ってから再度アクティベート（Spaceの切り替えを確実にする）
+                usleep(100000) // 100ms待機
+                app.activate()
+                
                 print("Activated window: \(title)")
                 exit(0)
             }
         }
     }
+    
+    // ウィンドウが見つからなかった場合、CGWindowListから探してみる
+    let windowList = CGWindowListCopyWindowInfo([.optionAll], kCGNullWindowID) as? [[String: Any]] ?? []
+    
+    for windowInfo in windowList {
+        guard let ownerPID = windowInfo[kCGWindowOwnerPID as String] as? Int32, ownerPID == pid else {
+            continue
+        }
+        
+        guard let windowName = windowInfo[kCGWindowName as String] as? String else {
+            continue
+        }
+        
+        if windowName.contains(targetWindowTitle) || targetWindowTitle.contains(windowName) || windowName == targetWindowTitle {
+            // ウィンドウIDを取得
+            if let _ = windowInfo[kCGWindowNumber as String] as? CGWindowID {
+                // AXUIElementでこのウィンドウを探して再度アクティベートを試みる
+                app.activate()
+                usleep(200000) // 200ms待機
+                
+                // 再度ウィンドウを取得してアクティベート
+                var windowsValue2: CFTypeRef?
+                let result2 = AXUIElementCopyAttributeValue(axApp, kAXWindowsAttribute as CFString, &windowsValue2)
+                
+                if result2 == .success, let windows2 = windowsValue2 as? [AXUIElement] {
+                    for win in windows2 {
+                        var titleVal: CFTypeRef?
+                        let titleRes = AXUIElementCopyAttributeValue(win, kAXTitleAttribute as CFString, &titleVal)
+                        if titleRes == .success, let t = titleVal as? String, t == windowName {
+                            AXUIElementPerformAction(win, kAXRaiseAction as CFString)
+                            AXUIElementSetAttributeValue(axApp, kAXMainWindowAttribute as CFString, win)
+                            print("Activated window (via CGWindowList): \(windowName)")
+                            exit(0)
+                        }
+                    }
+                }
+                
+                print("Found window in CGWindowList but could not activate: \(windowName)")
+            }
+        }
+    }
+    
     print("Window not found: \(targetWindowTitle)")
     exit(1)
 } else {

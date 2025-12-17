@@ -6,6 +6,16 @@ import { ActiveWindow, TaskWindow } from '../shared/types';
 
 const execAsync = promisify(exec);
 
+// ウィンドウキャッシュ（アプリ名|||ウィンドウタイトル -> ActiveWindow）
+// 一度取得したウィンドウ情報をキャッシュし、別Spaceのウィンドウも表示できるようにする
+const windowCache = new Map<string, ActiveWindow>();
+
+// キャッシュの有効期限（ミリ秒）- 5分
+const CACHE_EXPIRY_MS = 5 * 60 * 1000;
+
+// キャッシュエントリのタイムスタンプ
+const cacheTimestamps = new Map<string, number>();
+
 // Swiftヘルパースクリプトのパスを取得（ウィンドウ一覧取得用）
 function getSwiftHelperPath(): string {
   const isDev = !app.isPackaged;
@@ -24,18 +34,35 @@ function getActivateWindowHelperPath(): string {
   return join(process.resourcesPath, 'activate_window.swift');
 }
 
+// キャッシュキーを生成
+function getCacheKey(appName: string, windowTitle: string): string {
+  return `${appName}|||${windowTitle}`;
+}
+
+// 期限切れのキャッシュエントリを削除
+function cleanExpiredCache(): void {
+  const now = Date.now();
+  for (const [key, timestamp] of cacheTimestamps.entries()) {
+    if (now - timestamp > CACHE_EXPIRY_MS) {
+      windowCache.delete(key);
+      cacheTimestamps.delete(key);
+    }
+  }
+}
+
 // 現在開いているウィンドウ一覧を取得
-// AXManualAccessibilityを有効にしてElectronベースのアプリ（VS Code, Antigravityなど）のウィンドウも取得
+// キャッシュを併用して、別Spaceにあるウィンドウも表示
 export async function getActiveWindows(): Promise<ActiveWindow[]> {
   try {
-    // Swiftヘルパースクリプトを実行してAXManualAccessibilityを有効にしたウィンドウを取得
+    // Swiftヘルパースクリプトを実行してウィンドウを取得
     const swiftHelperPath = getSwiftHelperPath();
     const { stdout } = await execAsync(`swift "${swiftHelperPath}"`, {
       timeout: 10000, // 10秒タイムアウト
     });
 
-    const windows: ActiveWindow[] = [];
+    const currentWindows: ActiveWindow[] = [];
     const lines = stdout.trim().split('\n');
+    const now = Date.now();
 
     let windowId = 0;
     for (const line of lines) {
@@ -44,16 +71,41 @@ export async function getActiveWindows(): Promise<ActiveWindow[]> {
         const appName = parts[0].trim();
         const windowTitle = parts[1].trim();
         if (appName && windowTitle) {
-          windows.push({
+          const window: ActiveWindow = {
             appName,
             windowTitle,
             windowId: windowId++,
-          });
+          };
+          currentWindows.push(window);
+
+          // キャッシュを更新
+          const cacheKey = getCacheKey(appName, windowTitle);
+          windowCache.set(cacheKey, window);
+          cacheTimestamps.set(cacheKey, now);
         }
       }
     }
 
-    return windows;
+    // 期限切れのキャッシュを削除
+    cleanExpiredCache();
+
+    // 現在取得できたウィンドウのキーを集める
+    const currentKeys = new Set(
+      currentWindows.map(w => getCacheKey(w.appName, w.windowTitle))
+    );
+
+    // キャッシュから、現在取得できなかったウィンドウを追加
+    // （別Spaceにあるウィンドウ）
+    for (const [key, cachedWindow] of windowCache.entries()) {
+      if (!currentKeys.has(key)) {
+        currentWindows.push({
+          ...cachedWindow,
+          windowId: windowId++,
+        });
+      }
+    }
+
+    return currentWindows;
   } catch (error) {
     console.error('Failed to get active windows with Swift helper:', error);
     // フォールバック: 従来のAppleScriptを使用
@@ -176,4 +228,18 @@ export async function switchToTaskWindows(taskWindows: TaskWindow[]): Promise<vo
       await activateWindow(tw.appName, tw.windowTitle);
     }
   }
+}
+
+// キャッシュをクリア（デバッグ用）
+export function clearWindowCache(): void {
+  windowCache.clear();
+  cacheTimestamps.clear();
+}
+
+// キャッシュの状態を取得（デバッグ用）
+export function getWindowCacheStatus(): { size: number; keys: string[] } {
+  return {
+    size: windowCache.size,
+    keys: Array.from(windowCache.keys()),
+  };
 }
