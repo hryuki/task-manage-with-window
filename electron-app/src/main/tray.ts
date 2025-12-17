@@ -2,6 +2,7 @@ import { app, globalShortcut, Menu, nativeImage, NativeImage, Tray } from 'elect
 import { join } from 'path';
 import { hideFloatingWindow, setWindowOpacity, showFloatingWindow, toggleFloatingWindow } from './floatingWindow';
 import { loadSettings, SHORTCUT_OPTIONS, updateOpacity, updateShortcut } from './settings';
+import { checkForUpdatesManual, getCurrentVersion } from './updater';
 
 let tray: Tray | null = null;
 let currentShortcut: string | null = null;
@@ -112,6 +113,11 @@ function updateTrayMenu() {
                     submenu: opacitySubmenu,
                 },
             ],
+        },
+        { type: 'separator' },
+        {
+            label: `アップデートを確認 (v${getCurrentVersion()})`,
+            click: () => checkForUpdatesManual(),
         },
         { type: 'separator' },
         {
