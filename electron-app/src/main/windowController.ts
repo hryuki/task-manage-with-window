@@ -6,25 +6,22 @@ import { ActiveWindow, TaskWindow } from '../shared/types';
 
 const execAsync = promisify(exec);
 
-// Swiftヘルパースクリプトのパスを取得
+// Swiftヘルパースクリプトのパスを取得（ウィンドウ一覧取得用）
 function getSwiftHelperPath(): string {
   const isDev = !app.isPackaged;
-  let scriptPath: string;
-
   if (isDev) {
-    // 開発環境: dist/main/ から ../../resources/ を参照
-    // __dirname は /path/to/electron-app/dist/main を指す
-    scriptPath = join(__dirname, '../../resources/get_electron_windows.swift');
-  } else {
-    // パッケージ環境: process.resourcesPath を使用
-    scriptPath = join(process.resourcesPath, 'get_electron_windows.swift');
+    return join(__dirname, '../../resources/get_electron_windows.swift');
   }
+  return join(process.resourcesPath, 'get_electron_windows.swift');
+}
 
-  console.log('[WindowController] isDev:', isDev);
-  console.log('[WindowController] __dirname:', __dirname);
-  console.log('[WindowController] Swift helper path:', scriptPath);
-
-  return scriptPath;
+// ウィンドウアクティベート用Swiftスクリプトのパスを取得
+function getActivateWindowHelperPath(): string {
+  const isDev = !app.isPackaged;
+  if (isDev) {
+    return join(__dirname, '../../resources/activate_window.swift');
+  }
+  return join(process.resourcesPath, 'activate_window.swift');
 }
 
 // 現在開いているウィンドウ一覧を取得
@@ -135,40 +132,37 @@ export async function activateApp(appName: string): Promise<boolean> {
   }
 }
 
-// 特定のアプリのウィンドウをアクティブにする（タイトルで部分一致）
+// 特定のアプリのウィンドウをアクティブにする（タイトルで一致）
+// Electronベースのアプリ（VS Code, Antigravityなど）にも対応
 export async function activateWindow(appName: string, windowTitlePattern?: string): Promise<boolean> {
-  let script: string;
-
-  if (windowTitlePattern) {
-    script = `
-      tell application "System Events"
-        tell process "${appName}"
-          set frontmost to true
-          set allWindows to every window
-          repeat with win in allWindows
-            if name of win contains "${windowTitlePattern}" then
-              perform action "AXRaise" of win
-              return true
-            end if
-          end repeat
-        end tell
-      end tell
-      tell application "${appName}" to activate
-      return true
-    `;
-  } else {
-    script = `
-      tell application "${appName}" to activate
-      return true
-    `;
-  }
-
   try {
-    await execAsync(`osascript -e '${script.replace(/'/g, "'\\''")}'`);
-    return true;
+    if (windowTitlePattern) {
+      // Swiftヘルパースクリプトを使用してウィンドウをアクティベート
+      // これによりElectronアプリのウィンドウも正しく識別・アクティベート可能
+      const activateHelperPath = getActivateWindowHelperPath();
+      const escapedAppName = appName.replace(/"/g, '\\"');
+      const escapedTitle = windowTitlePattern.replace(/"/g, '\\"');
+
+      await execAsync(`swift "${activateHelperPath}" "${escapedAppName}" "${escapedTitle}"`, {
+        timeout: 10000,
+      });
+      return true;
+    } else {
+      // ウィンドウタイトルが指定されていない場合は従来のAppleScriptを使用
+      const script = `tell application "${appName}" to activate`;
+      await execAsync(`osascript -e '${script.replace(/'/g, "'\\''")}'`);
+      return true;
+    }
   } catch (error) {
     console.error(`Failed to activate window ${appName} - ${windowTitlePattern}:`, error);
-    return false;
+    // フォールバック: 従来のAppleScriptを試す
+    try {
+      const script = `tell application "${appName}" to activate`;
+      await execAsync(`osascript -e '${script.replace(/'/g, "'\\''")}'`);
+      return true;
+    } catch {
+      return false;
+    }
   }
 }
 

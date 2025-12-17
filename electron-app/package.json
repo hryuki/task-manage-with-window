@@ -1,6 +1,6 @@
 {
   "name": "task-manage-with-window",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "タスク管理アプリ - ウィンドウとChromeタブを紐づけて管理",
   "main": "dist/main/index.js",
   "scripts": {
@@ -54,6 +54,10 @@
       {
         "from": "resources/get_electron_windows.swift",
         "to": "get_electron_windows.swift"
+      },
+      {
+        "from": "resources/activate_window.swift",
+        "to": "activate_window.swift"
       }
     ],
     "files": [
