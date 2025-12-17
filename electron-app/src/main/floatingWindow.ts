@@ -40,6 +40,9 @@ export async function createFloatingWindow(isDev: boolean) {
         },
     });
 
+    // すべてのデスクトップ（Spaces）で表示
+    floatingWindow.setVisibleOnAllWorkspaces(true);
+
     // ウィンドウがフォーカスを失っても隠さない
     // ユーザーが明示的に隠すまで表示し続ける
 
