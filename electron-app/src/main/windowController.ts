@@ -8,12 +8,23 @@ const execAsync = promisify(exec);
 
 // Swiftヘルパースクリプトのパスを取得
 function getSwiftHelperPath(): string {
-  // 開発環境とパッケージ環境の両方に対応
   const isDev = !app.isPackaged;
+  let scriptPath: string;
+
   if (isDev) {
-    return join(__dirname, '../../resources/get_electron_windows.swift');
+    // 開発環境: dist/main/ から ../../resources/ を参照
+    // __dirname は /path/to/electron-app/dist/main を指す
+    scriptPath = join(__dirname, '../../resources/get_electron_windows.swift');
+  } else {
+    // パッケージ環境: process.resourcesPath を使用
+    scriptPath = join(process.resourcesPath, 'get_electron_windows.swift');
   }
-  return join(process.resourcesPath, 'get_electron_windows.swift');
+
+  console.log('[WindowController] isDev:', isDev);
+  console.log('[WindowController] __dirname:', __dirname);
+  console.log('[WindowController] Swift helper path:', scriptPath);
+
+  return scriptPath;
 }
 
 // 現在開いているウィンドウ一覧を取得

@@ -50,6 +50,12 @@
       "category": "public.app-category.productivity",
       "icon": "resources/icon.png"
     },
+    "extraResources": [
+      {
+        "from": "resources/get_electron_windows.swift",
+        "to": "get_electron_windows.swift"
+      }
+    ],
     "files": [
       "dist/**/*",
       "resources/**/*"
